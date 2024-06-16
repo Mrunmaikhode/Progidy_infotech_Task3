@@ -1,0 +1,153 @@
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+struct Contact {
+    string name;
+    string phone;
+    string email;
+};
+
+void saveContacts(const vector<Contact>& contacts) {
+    ofstream file("contacts.txt");
+    for (const auto& contact : contacts) {
+        file << contact.name << "," << contact.phone << "," << contact.email << endl;
+    }
+    file.close();
+}
+
+vector<Contact> loadContacts() {
+    vector<Contact> contacts;
+    ifstream file("contacts.txt");
+    string line, name, phone, email;
+
+    while (getline(file, line)) {
+        stringstream ss(line);
+        getline(ss, name, ',');
+        getline(ss, phone, ',');
+        getline(ss, email, ',');
+        contacts.push_back({name, phone, email});
+    }
+
+    file.close();
+    return contacts;
+}
+
+void addContact(vector<Contact>& contacts) {
+    Contact newContact;
+    cout << "Enter name: ";
+    cin.ignore();
+    getline(cin, newContact.name);
+    cout << "Enter phone number: ";
+    getline(cin, newContact.phone);
+    cout << "Enter email address: ";
+    getline(cin, newContact.email);
+    contacts.push_back(newContact);
+    saveContacts(contacts);
+    cout << "Contact added successfully!" << endl;
+}
+
+void viewContacts(const vector<Contact>& contacts) {
+    if (contacts.empty()) {
+        cout << "No contacts found." << endl;
+        return;
+    }
+    for (size_t i = 0; i < contacts.size(); ++i) {
+        cout << i + 1 << ". " << contacts[i].name << " - " << contacts[i].phone << " - " << contacts[i].email << endl;
+    }
+}
+
+void editContact(vector<Contact>& contacts) {
+    viewContacts(contacts);
+    if (contacts.empty()) return;
+
+    size_t index;
+    cout << "Enter the number of the contact to edit: ";
+    cin >> index;
+
+    if (index < 1 || index > contacts.size()) {
+        cout << "Invalid contact number." << endl;
+        return;
+    }
+
+    Contact& contact = contacts[index - 1];
+    cout << "Editing contact: " << contact.name << " - " << contact.phone << " - " << contact.email << endl;
+
+    cout << "Enter new name (or press enter to keep current): ";
+    cin.ignore();
+    string newName;
+    getline(cin, newName);
+    if (!newName.empty()) contact.name = newName;
+
+    cout << "Enter new phone number (or press enter to keep current): ";
+    string newPhone;
+    getline(cin, newPhone);
+    if (!newPhone.empty()) contact.phone = newPhone;
+
+    cout << "Enter new email address (or press enter to keep current): ";
+    string newEmail;
+    getline(cin, newEmail);
+    if (!newEmail.empty()) contact.email = newEmail;
+
+    saveContacts(contacts);
+    cout << "Contact updated successfully!" << endl;
+}
+
+void deleteContact(vector<Contact>& contacts) {
+    viewContacts(contacts);
+    if (contacts.empty()) return;
+
+    size_t index;
+    cout << "Enter the number of the contact to delete: ";
+    cin >> index;
+
+    if (index < 1 || index > contacts.size()) {
+        cout << "Invalid contact number." << endl;
+        return;
+    }
+
+    contacts.erase(contacts.begin() + index - 1);
+    saveContacts(contacts);
+    cout << "Contact deleted successfully!" << endl;
+}
+
+int main() {
+    vector<Contact> contacts = loadContacts();
+    int choice;
+
+    while (true) {
+        cout << "1. Add Contact" << endl;
+        cout << "2. View Contacts" << endl;
+        cout << "3. Edit Contact" << endl;
+        cout << "4. Delete Contact" << endl;
+        cout << "5. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                addContact(contacts);
+                break;
+            case 2:
+                viewContacts(contacts);
+                break;
+            case 3:
+                editContact(contacts);
+                break;
+            case 4:
+                deleteContact(contacts);
+                break;
+            case 5:
+                return 0;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+    }
+
+}
+
